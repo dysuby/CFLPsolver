@@ -13,7 +13,6 @@ def greedy(instances_name):
     total_cost = 0
     for i in range(customer_num):
         cost_sort = np.argsort(cost[:, i])
-        flag = True # 是否无解
         for j in cost_sort:
             if capacity[j] >= demand[i]:
                 if not is_opened[j]:
@@ -22,11 +21,7 @@ def greedy(instances_name):
                 total_cost += cost[j, i]
                 assigned[i] = j
                 capacity[j] -= demand[i]
-                flag = False
                 break
-        if flag:
-            print('No solution!')
-            exit(1)
 
     print('Final cost: {}'.format(total_cost))
     print('Opening list: {}'.format(is_opened))
