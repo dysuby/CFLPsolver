@@ -1,7 +1,7 @@
 import numpy as np
 from time import time
 
-from utils import read, write_to_csv
+from utils import read, write_to_csv, write_details
 
 def greedy(instances_name):
     capacity, opening_cost, demand, cost = read(instances_name)
@@ -43,5 +43,6 @@ if __name__ == '__main__':
         tc, io, ass = greedy('p{}'.format(i))
         cost_time.append(time() - st)
         result.append(tc)
+        write_details('greedy', i, tc, io, ass)
 
     write_to_csv('greedy', result, cost_time)
