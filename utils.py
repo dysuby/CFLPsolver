@@ -22,7 +22,7 @@ def read(instance):
             cost.append([float(x) for x in array[index:index + customer_num]])
             index += customer_num
 
-        return np.array(capacity), np.array(opening_cost), np.array(demand), np.array(cost)
+        return capacity, opening_cost, demand, np.array(cost)
 
 
 def write_to_csv(algo, result, time):
