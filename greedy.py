@@ -44,4 +44,4 @@ if __name__ == '__main__':
         cost_time.append(time() - st)
         result.append(tc)
 
-    write_to_csv(result, cost_time)
+    write_to_csv('greedy', result, cost_time)

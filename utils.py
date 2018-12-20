@@ -25,9 +25,9 @@ def read(instance):
         return np.array(capacity), np.array(opening_cost), np.array(demand), np.array(cost)
 
 
-def write_to_csv(result, time):
+def write_to_csv(algo, result, time):
     headers = ['', 'result', 'time(s)']
-    with open('result/result.csv', 'w') as f:
+    with open('result/{}_result.csv'.format(algo), 'w') as f:
         f_csv = csv.writer(f)
         f_csv.writerow(headers)
         f_csv.writerows([(p, r, t) for p, r, t in zip(['p{}'.format(i)
