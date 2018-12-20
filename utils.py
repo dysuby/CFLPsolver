@@ -33,6 +33,12 @@ def write_to_csv(algo, result, time):
         f_csv.writerows([(p, r, t) for p, r, t in zip(['p{}'.format(i)
                                                  for i in range(0, len(result) + 1)], result, time)])
 
+def write_details(algo, instances_num, cost, is_opened, assigned):
+    with open('result/{}/{}.txt'.format(algo, 'p{}'.format(instances_num)), 'w') as f:
+        f.write(str(cost) + '\n')
+        f.write(' '.join([str(s) for s in is_opened]) + '\n')
+        f.write(' '.join([str(s) for s in assigned]) + '\n')
+
 
 if __name__ == '__main__':
     ca, op, de, co = read('p1')
