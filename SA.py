@@ -108,13 +108,17 @@ class SA:
         indices = list(range(self.customer_num))
         random.shuffle(indices)
         for i in indices:
-            if solution.assigned[i] != target and new_left[target] >= self.demand[i]:
+            old = solution.assigned[i]
+            if old != target and new_left[target] >= self.demand[i]:
                 # 可以满足需求
                 new_cost += self.cost[target, i] - \
-                    self.cost[solution.assigned[i], i]
+                    self.cost[old, i]
                 new_assigned[i] = target
                 new_left[target] -= self.demand[i]
-                new_left[solution.assigned[i]] += self.demand[i]
+                new_left[old] += self.demand[i]
+                if new_left[old] == self.capacity[old]:
+                    new_cost -= self.opening_cost[old]
+                    new_is_opened[old] = 0
 
         return Solution(new_cost, new_is_opened, new_assigned, new_left)
 
@@ -140,12 +144,13 @@ class SA:
             fac, = random.sample(facility_can_choose, 1)
 
         # 更新解
+        old = solution.assigned[cust]
         new_assigned = solution.assigned.copy()
         new_assigned[cust] = fac
 
         new_cost = solution.cost
         new_cost += self.cost[fac, cust] - \
-            self.cost[solution.assigned[cust], cust]
+            self.cost[old, cust]
 
         new_is_opened = solution.is_opened.copy()
         if not new_is_opened[fac]:       # 如果工厂没开
@@ -153,8 +158,12 @@ class SA:
             new_cost += self.opening_cost[fac]
 
         new_left = solution.left.copy()
-        new_left[solution.assigned[cust]] += self.demand[cust]
+        new_left[old] += self.demand[cust]
         new_left[fac] -= self.demand[cust]
+
+        if new_left[old] == self.capacity[old] and new_is_opened[old]:
+            new_is_opened[old] = 0
+            new_cost -= self.opening_cost[old]
 
         return Solution(new_cost, new_is_opened, new_assigned, new_left)
 
@@ -169,6 +178,7 @@ class SA:
             # 内循环
             for j in range(ntimes):
                 new_solution = self.localsearch(solution)
+                self.constraint(solution)   # 检查是否有效
                 delta = new_solution.cost - solution.cost
 
                 if delta <= 0 or np.random.ranf() < np.exp(-delta / T):     # 接受解的情况
@@ -187,6 +197,32 @@ class SA:
 
         return self.optimal.cost, self.optimal.is_opened, self.optimal.assigned
 
+    def constraint(self, solution):
+        cost = 0
+        left = self.capacity.copy()
+        should_open = [0] * self.facility_num
+        for i in range(self.customer_num):
+            cost += self.cost[solution.assigned[i], i]
+            left[solution.assigned[i]] -= self.demand[i]
+            should_open[solution.assigned[i]] = 1
+        
+        for i in range(self.facility_num):      # 计算开厂费用
+            if solution.is_opened[i]:
+                cost += self.opening_cost[i]
+
+        if min(left) < 0:   # 超出容量
+            print('Exceed')
+            exit(1)
+        elif cost != solution.cost:     # 计算费用错误
+            print('Not equal')
+            exit(1)
+        elif left != solution.left:     # 计算剩余容量错误
+            print('Left')
+            exit(1)
+        elif should_open != solution.is_opened:     # 工厂开多了或者开少了
+            print('Too much or too less')
+            exit(1)
+        print('Constraint pass')
 
 if __name__ == '__main__':
     cost_time = []
