@@ -94,7 +94,7 @@ class SA:
         cust, = random.sample(range(self.customer_num), 1)
         can_choose = list(range(self.facility_num))
         fac, = random.sample(can_choose, 1)
-        while solution.assigned[cust] == fac and solution.left[fac] < self.demand[cust]:
+        while solution.assigned[cust] == fac or solution.left[fac] < self.demand[cust]:
             can_choose.remove(fac)
             if not can_choose:
                 return solution
@@ -103,7 +103,8 @@ class SA:
         new_assigned[cust] = fac
 
         new_cost = solution.cost
-        new_cost += self.cost[fac, cust] - self.cost[solution.assigned[cust], cust]
+        new_cost += self.cost[fac, cust] - \
+            self.cost[solution.assigned[cust], cust]
 
         new_is_opened = solution.is_opened.copy()
         if not new_is_opened[fac]:
@@ -117,9 +118,7 @@ class SA:
         return Solution(new_cost, new_is_opened, new_assigned, new_left)
 
     def localsearch(self, solution):
-        neighbors = [self.move_customer(
-            solution), self.swap_facility(solution)]
-        return min(neighbors, key=lambda s: s.cost)
+        return random.sample([self.move_facility, self.swap_facility, self.move_customer], 1)[0](solution)
 
     def run(self, T, tmin, ntimes, T_ratio):
         solution = self.gen_init_solution()
