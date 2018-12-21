@@ -200,17 +200,13 @@ class SA:
                 cost += self.opening_cost[i]
 
         if min(left) < 0:   # 超出容量
-            print('Exceed')
-            exit(1)
+            raise Exception('Capacity Exceed')
         elif cost != solution.cost:     # 计算费用错误
-            print('Not equal')
-            exit(1)
+            raise Exception('Cost calculation error')
         elif left != solution.left:     # 计算剩余容量错误
-            print('Left')
-            exit(1)
+            raise Exception('Left calculation error')
         elif should_open != solution.is_opened:     # 工厂开多了或者开少了
-            print('Too much or too less')
-            exit(1)
+            raise Exception('Open list error')
         print('Constraint pass')
 
 if __name__ == '__main__':
