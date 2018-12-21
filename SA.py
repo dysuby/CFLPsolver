@@ -9,6 +9,7 @@ class Solution:
     """
     保存解
     """
+
     def __init__(self, cost, is_opened, assigned, left):
         self.cost = cost
         self.is_opened = is_opened
@@ -67,8 +68,7 @@ class SA:
         # 更新解
         old_i = solution.assigned[i]
         old_j = solution.assigned[j]
-        solution.assigned[i] = old_j
-        solution.assigned[j] = old_i
+        solution.assigned[i], solution.assigned[j] = old_j, old_i
 
         solution.cost -= self.cost[old_i, i] + \
             self.cost[old_j, j]
@@ -194,7 +194,7 @@ class SA:
             cost += self.cost[solution.assigned[i], i]
             left[solution.assigned[i]] -= self.demand[i]
             should_open[solution.assigned[i]] = 1
-        
+
         for i in range(self.facility_num):      # 计算开厂费用
             if solution.is_opened[i]:
                 cost += self.opening_cost[i]
@@ -208,6 +208,7 @@ class SA:
         elif should_open != solution.is_opened:     # 工厂开多了或者开少了
             raise Exception('Open list error')
         print('Constraint pass')
+
 
 if __name__ == '__main__':
     cost_time = []
