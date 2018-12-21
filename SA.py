@@ -2,7 +2,6 @@ import numpy as np
 import random
 from copy import deepcopy
 from time import time
-from greedy import greedy
 from utils import read, write_to_csv, write_details
 
 
