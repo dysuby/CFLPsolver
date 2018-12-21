@@ -87,7 +87,7 @@ class SA:
         indices = list(range(self.customer_num))
         random.shuffle(indices)
         for i in indices:
-            if new_left[target] >= self.demand[i]:
+            if solution.assigned[i] != target and new_left[target] >= self.demand[i]:
                 new_cost += self.cost[target, i] - \
                     self.cost[solution.assigned[i], i]
                 new_assigned[i] = target
@@ -124,7 +124,7 @@ class SA:
         return Solution(new_cost, new_is_opened, new_assigned, new_left)
 
     def localsearch(self, solution):
-        return random.sample([self.swap_facility, self.move_customer], 1)[0](solution)
+        return random.sample([self.move_facility, self.swap_facility, self.move_customer], 1)[0](solution)
 
     def run(self, T, tmin, ntimes, T_ratio):
         solution = self.gen_init_solution()
