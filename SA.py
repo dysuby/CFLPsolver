@@ -131,7 +131,6 @@ class SA:
         solution = self.gen_init_solution()
         self.optimal = solution
 
-        self.s_set = [solution]
         while T > tmin:
             for j in range(ntimes):
                 new_solution = self.localsearch(solution)
@@ -141,7 +140,6 @@ class SA:
                     solution = new_solution
                     if solution.cost < self.optimal.cost:
                         self.optimal = solution
-                        self.s_set.append(solution)
 
                 print('T: {} times: {}/{}: current: {} best: {}'.format(
                     T, j, ntimes, solution.cost, self.optimal.cost))
