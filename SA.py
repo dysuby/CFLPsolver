@@ -160,7 +160,7 @@ if __name__ == '__main__':
         print('instances: {}'.format(i))
         st = time()
         sa = SA('p{}'.format(i))
-        tc, io, ass = sa.run(100, 1, 3000, 0.95)
+        tc, io, ass = sa.run(100, 5, 3000, 0.95)
         cost_time.append(time() - st)
         result.append(tc)
         write_details('sa', i, tc, io, ass)
