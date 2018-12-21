@@ -123,15 +123,21 @@ class SA:
         随机选择一位顾客，将他分配到一个新的随机工厂
         """
         # 随机选择顾客和工厂
-        cust, = random.sample(range(self.customer_num), 1)
-        can_choose = list(range(self.facility_num))
-        fac, = random.sample(can_choose, 1)
+        customer_can_choose = list(range(self.customer_num))
+        cust, = random.sample(customer_can_choose, 1)
+
+        facility_can_choose = list(range(self.facility_num))
+        fac, = random.sample(facility_can_choose, 1)
         while solution.assigned[cust] == fac or solution.left[fac] < self.demand[cust]:
             # 直到工厂可以满足顾客的需求
-            can_choose.remove(fac)
-            if not can_choose:
-                return solution
-            fac, = random.sample(can_choose, 1)
+            facility_can_choose.remove(fac)
+            if not facility_can_choose:      # 该顾客已经无法选择其他工厂
+                customer_can_choose.remove(cust)
+                if not customer_can_choose:     # 已经没有可以移动的顾客
+                    return solution
+                cust, = random.sample(customer_can_choose, 1)   # 重新选择顾客
+                facility_can_choose = list(range(self.facility_num))
+            fac, = random.sample(facility_can_choose, 1)
 
         # 更新解
         new_assigned = solution.assigned.copy()
