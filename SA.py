@@ -47,6 +47,7 @@ class SA:
         i, j = random.sample(customer, 1)[0]
         while solution.left[solution.assigned[j]] + self.demand[j] < self.demand[i] or solution.left[solution.assigned[i]] + self.demand[i] < self.demand[j]:
             customer.remove([i, j])
+            customer.remove([j, i])
             if not customer:
                 return solution
             i, j = random.sample(customer, 1)[0]
