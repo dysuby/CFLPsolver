@@ -1,5 +1,6 @@
 import numpy as np
 import random
+from copy import deepcopy
 from time import time
 from greedy import greedy
 from utils import read, write_to_csv, write_details
@@ -65,21 +66,20 @@ class SA:
             i, j = random.sample(customer, 1)[0]
 
         # 更新解
-        new_assigned = solution.assigned.copy()
-        new_assigned[i] = solution.assigned[j]
-        new_assigned[j] = solution.assigned[i]
+        old_i = solution.assigned[i]
+        old_j = solution.assigned[j]
+        solution.assigned[i] = old_j
+        solution.assigned[j] = old_i
 
-        new_cost = solution.cost
-        new_cost -= self.cost[solution.assigned[i], i] + \
-            self.cost[solution.assigned[j], j]
-        new_cost += self.cost[solution.assigned[j], i] + \
-            self.cost[solution.assigned[i], j]
+        solution.cost -= self.cost[old_i, i] + \
+            self.cost[old_j, j]
+        solution.cost += self.cost[old_j, i] + \
+            self.cost[old_i, j]
 
-        new_left = solution.left.copy()
-        new_left[solution.assigned[j]] += self.demand[j] - self.demand[i]
-        new_left[solution.assigned[i]] += self.demand[i] - self.demand[j]
+        solution.left[old_j] += self.demand[j] - self.demand[i]
+        solution.left[old_i] += self.demand[i] - self.demand[j]
 
-        return Solution(new_cost, solution.is_opened.copy(), new_assigned, new_left)
+        return solution
 
     def move_facility(self, solution):
         """
@@ -96,31 +96,27 @@ class SA:
             target, = random.sample(can_choose, 1)
 
         # 更新解
-        new_is_opened = solution.is_opened.copy()
-        new_cost = solution.cost
         if not solution.is_opened[target]:  # 如果工厂没开
-            new_is_opened[target] = 1
-            new_cost += self.opening_cost[target]
-        new_left = solution.left.copy()
-        new_assigned = solution.assigned.copy()
+            solution.is_opened[target] = 1
+            solution.cost += self.opening_cost[target]
 
         # 将其他客人分配到该工厂上
         indices = list(range(self.customer_num))
         random.shuffle(indices)
         for i in indices:
             old = solution.assigned[i]
-            if old != target and new_left[target] >= self.demand[i]:
+            if old != target and solution.left[target] >= self.demand[i]:
                 # 可以满足需求
-                new_cost += self.cost[target, i] - \
+                solution.cost += self.cost[target, i] - \
                     self.cost[old, i]
-                new_assigned[i] = target
-                new_left[target] -= self.demand[i]
-                new_left[old] += self.demand[i]
-                if new_left[old] == self.capacity[old]:    # 如果工厂无人使用
-                    new_cost -= self.opening_cost[old]
-                    new_is_opened[old] = 0
+                solution.assigned[i] = target
+                solution.left[target] -= self.demand[i]
+                solution.left[old] += self.demand[i]
+                if solution.left[old] == self.capacity[old]:    # 如果工厂无人使用
+                    solution.cost -= self.opening_cost[old]
+                    solution.is_opened[old] = 0
 
-        return Solution(new_cost, new_is_opened, new_assigned, new_left)
+        return solution
 
     def move_customer(self, solution):
         """
@@ -145,30 +141,23 @@ class SA:
 
         # 更新解
         old = solution.assigned[cust]
-        new_assigned = solution.assigned.copy()
-        new_assigned[cust] = fac
+        solution.assigned[cust] = fac
 
-        new_cost = solution.cost
-        new_cost += self.cost[fac, cust] - \
+        solution.cost += self.cost[fac, cust] - \
             self.cost[old, cust]
 
-        new_is_opened = solution.is_opened.copy()
-        if not new_is_opened[fac]:       # 如果工厂没开
-            new_is_opened[fac] = 1
-            new_cost += self.opening_cost[fac]
+        if not solution.is_opened[fac]:       # 如果工厂没开
+            solution.is_opened[fac] = 1
+            solution.cost += self.opening_cost[fac]
 
-        new_left = solution.left.copy()
-        new_left[old] += self.demand[cust]
-        new_left[fac] -= self.demand[cust]
+        solution.left[old] += self.demand[cust]
+        solution.left[fac] -= self.demand[cust]
 
-        if new_left[old] == self.capacity[old] and new_is_opened[old]:  # 如果工厂无人使用
-            new_is_opened[old] = 0
-            new_cost -= self.opening_cost[old]
+        if solution.left[old] == self.capacity[old] and solution.is_opened[old]:  # 如果工厂无人使用
+            solution.is_opened[old] = 0
+            solution.cost -= self.opening_cost[old]
 
-        return Solution(new_cost, new_is_opened, new_assigned, new_left)
-
-    def localsearch(self, solution):
-        return random.sample([self.move_facility, self.swap_facility, self.move_customer], 1)[0](solution)
+        return solution
 
     def run(self, T, tmin, ntimes, T_ratio):
         solution = self.gen_init_solution()
@@ -177,8 +166,9 @@ class SA:
         while T > tmin:
             # 内循环
             for j in range(ntimes):
-                new_solution = self.localsearch(solution)
-                self.constraint(solution)   # 检查是否有效
+                # 局部搜索
+                new_solution = random.sample(
+                    [self.move_facility, self.swap_facility, self.move_customer], 1)[0](deepcopy(solution))
                 delta = new_solution.cost - solution.cost
 
                 if delta <= 0 or np.random.ranf() < np.exp(-delta / T):     # 接受解的情况
@@ -190,7 +180,7 @@ class SA:
                     T, j, ntimes, solution.cost, self.optimal.cost))
 
             T *= T_ratio
-
+        self.constraint(self.optimal)
         print('Final cost: {}'.format(self.optimal.cost))
         print('Opening list: {}'.format(self.optimal.is_opened))
         print('Assigned list: {}'.format(self.optimal.assigned))
