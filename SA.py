@@ -65,7 +65,7 @@ class SA:
         new_left[solution.assigned[j]] += self.demand[j] - self.demand[i]
         new_left[solution.assigned[i]] += self.demand[i] - self.demand[j]
 
-        return Solution(new_cost, solution.is_opened, new_assigned, new_left)
+        return Solution(new_cost, solution.is_opened.copy(), new_assigned, new_left)
 
     def move_facility(self, solution):
         can_choose = list(range(self.facility_num))
