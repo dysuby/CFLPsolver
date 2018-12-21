@@ -42,4 +42,4 @@ def write_details(algo, instances_num, cost, is_opened, assigned):
 
 if __name__ == '__main__':
     ca, op, de, co = read('p1')
-    print(ca.shape, op.shape, de.shape, co.shape)
+    print(ca, op, de, co)
