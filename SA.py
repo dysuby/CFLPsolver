@@ -116,7 +116,7 @@ class SA:
                 new_assigned[i] = target
                 new_left[target] -= self.demand[i]
                 new_left[old] += self.demand[i]
-                if new_left[old] == self.capacity[old]:
+                if new_left[old] == self.capacity[old]:    # 如果工厂无人使用
                     new_cost -= self.opening_cost[old]
                     new_is_opened[old] = 0
 
@@ -161,7 +161,7 @@ class SA:
         new_left[old] += self.demand[cust]
         new_left[fac] -= self.demand[cust]
 
-        if new_left[old] == self.capacity[old] and new_is_opened[old]:
+        if new_left[old] == self.capacity[old] and new_is_opened[old]:  # 如果工厂无人使用
             new_is_opened[old] = 0
             new_cost -= self.opening_cost[old]
 
