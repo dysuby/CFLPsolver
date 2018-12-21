@@ -68,7 +68,13 @@ class SA:
         return Solution(new_cost, solution.is_opened, new_assigned, new_left)
 
     def move_facility(self, solution):
-        target, = random.sample(range(self.facility_num), 1)
+        can_choose = list(range(self.facility_num))
+        target, = random.sample(can_choose, 1)
+        while solution.left[target] < min(self.demand):
+            can_choose.remove(target)
+            if not can_choose:
+                return solution
+            target, = random.sample(can_choose, 1)
 
         new_is_opened = solution.is_opened.copy()
         new_cost = solution.cost
@@ -118,7 +124,7 @@ class SA:
         return Solution(new_cost, new_is_opened, new_assigned, new_left)
 
     def localsearch(self, solution):
-        return random.sample([self.move_facility, self.swap_facility, self.move_customer], 1)[0](solution)
+        return random.sample([self.swap_facility, self.move_customer], 1)[0](solution)
 
     def run(self, T, tmin, ntimes, T_ratio):
         solution = self.gen_init_solution()
